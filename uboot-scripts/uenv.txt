@@ -1,0 +1,15 @@
+overlays=
+rootdev=mmcblk0p2
+hekate_id=SWR-UBU
+usblogging=console=ttyGS0,115200,8n1
+uartb=no_console_suspend console=ttyS1,115200,8n1 earlycon=tegra_comb_uart,mmio32,0x70006040
+kernelcmd_run=setenv bootargs ${bootargs_extra} "root=/dev/${rootdev} rootfstype=ext4 rw access=m2 \
+		firmware_class.path=/lib/firmware/ \
+		fbcon=primary:1 \
+		consoleblank=0 \
+		tegra_fbmem=0x0@0x1 \
+		nvdec_enabled=0 pmc_reboot2payload.enabled=1 \
+		pmc_reboot2payload.reboot_action=bootloader \
+		pmc_reboot2payload.default_payload=reboot_payload.bin \
+		pmc_reboot2payload.hekate_config_id=${hekate_id} \
+		swr_dir=${linux_dir} "

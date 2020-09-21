@@ -1,0 +1,150 @@
+# fastboot setup for our GPT layout
+setenv fastboot_partition_alias_boot LNX
+setenv fastboot_partition_alias_system APP
+setenv fastboot_partition_alias_userdata UDA
+setenv fastboot_partition_alias_cache CAC
+setenv fastboot_partition_alias_recovery SOS
+setenv fastboot_partition_alias_dtb DTB
+
+# load fastboot first so 'fastboot continue' works
+gpio input 191 || fastboot 0
+
+# select eMMC as main mmc
+mmc dev $emmc_idx
+# store SD serial number to use as device serial
+mmc info serial#
+
+# generate a uboot version we can assert against in recovery
+setexpr ver_simple gsub "U-Boot (.*) \\(.*\\)" "\\1" "$ver"
+
+# find root partition and convert to decimal
+part number mmc $emmc_idx APP app_part_num
+setexpr app_part_num_dec gsub "^0x1$" 1 $app_part_num
+setexpr app_part_num_dec gsub "^0x2$" 2 $app_part_num
+setexpr app_part_num_dec gsub "^0x3$" 3 $app_part_num
+setexpr app_part_num_dec gsub "^0x4$" 4 $app_part_num
+setexpr app_part_num_dec gsub "^0x5$" 5 $app_part_num
+setexpr app_part_num_dec gsub "^0x6$" 6 $app_part_num
+setexpr app_part_num_dec gsub "^0x7$" 7 $app_part_num
+setexpr app_part_num_dec gsub "^0x8$" 8 $app_part_num
+setexpr app_part_num_dec gsub "^0x9$" 9 $app_part_num
+setexpr app_part_num_dec gsub "^0xa$" 10 $app_part_num
+setexpr app_part_num_dec gsub "^0xb$" 11 $app_part_num
+setexpr app_part_num_dec gsub "^0xc$" 12 $app_part_num
+setexpr app_part_num_dec gsub "^0xd$" 13 $app_part_num
+setexpr app_part_num_dec gsub "^0xe$" 14 $app_part_num
+setexpr app_part_num_dec gsub "^0xf$" 15 $app_part_num
+setexpr app_part_num_dec gsub "^0x11$" 16 $app_part_num
+setexpr app_part_num_dec gsub "^0x12$" 17 $app_part_num
+setexpr app_part_num_dec gsub "^0x13$" 18 $app_part_num
+setexpr app_part_num_dec gsub "^0x14$" 19 $app_part_num
+
+# load mac address info file
+fatload mmc ${sdmc_idx}:1 0x90000000 switchroot/joycon_mac.bin
+
+host_mac_addr=0xff
+
+if itest.b *0x90000000 == 0x01; then
+    # left joy con is available
+    host_mac_addr=0x90000007
+fi
+
+if itest.b *0x9000001d == 0x02; then
+    # right joy con is available
+    host_mac_addr=0x90000024
+fi
+
+if itest $host_mac_addr == 0xff; then
+    # no joy con is available
+
+    # write to a known good location
+    mw.q 0x90000000 ${serial#} 1
+
+    # write crc32 of value at offset 0x3
+    crc32 0x90000000 8 0x90000003
+
+    # write nintendo prefix
+    mw.b 0x90000000 0x98 1
+    mw.b 0x90000001 0xE8 1
+    mw.b 0x90000002 0xFA 1
+
+    # use this to generate mac
+    host_mac_addr=0x90000000
+fi
+
+bt_mac=""
+sep=""
+for i in 0 1 2 3 4 5 ; do
+    setexpr x $host_mac_addr + $i
+    setexpr.b b *$x
+    if itest $b <= 9; then
+        # There is no way to have leading zeros, so do this hack
+        bt_mac="$bt_mac${sep}0$b"
+    else
+        bt_mac="$bt_mac$sep$b"
+    fi
+    sep=":"
+done
+
+# FIXME after hekate gets wifi mac reading
+setexpr.b last_byte *0x90000005
+if itest $last_byte == 0xFF; then
+    # wrap around case
+    setexpr wifi_mac gsub "(.*:.*:.*:.*:.*:).*" "\\100" $bt_mac
+else
+    setexpr.b wb $last_byte + 1
+    if itest $wb <= 9; then
+        setexpr wifi_mac gsub "(.*:.*:.*:.*:.*:).*" "\\10$wb" $bt_mac
+    else
+        setexpr wifi_mac gsub "(.*:.*:.*:.*:.*:).*" "\\1$wb" $bt_mac
+    fi
+fi
+
+# load dtb
+part start mmc $emmc_idx DTB dtb_part_start
+part size mmc $emmc_idx DTB dtb_part_size
+
+mmc read $fdt_addr_r $dtb_part_start $dtb_part_size
+
+fdt addr $fdt_addr_r
+
+setenv bootargs_extra "no_console_suspend androidboot.console=ttyGS0 console=ttyGS0 earlycon=ttyGS0 keepearlycon=1"
+
+# patch dtb with overlays if they exist
+if fatload mmc ${sdmc_idx}:1 0x8f000000 switchroot/overlays/tegra210-icosa_emmc-overlay.dtbo; then
+    fdt resize 8192
+    fdt apply 0x8f000000
+fi
+
+if fatload mmc ${sdmc_idx}:1 0x8f000000 switchroot/overlays/tegra210-icosa-UART-B-overlay.dtbo; then
+    fdt resize 8192
+    fdt apply 0x8f000000
+    setenv bootargs_extra "no_console_suspend androidboot.console=ttyS1 console=ttyS1,115200,8n1 earlycon=uart8250,mmio32,0x70006040"
+fi
+
+# insert mac address dtb node
+fdt set /chosen nvidia,wifi-mac ${wifi_mac}
+fdt set /chosen nvidia,bluetooth-mac ${bt_mac}
+
+# gpio 190 = VOL_UP, 191 = VOL_DOWN
+if gpio input 190 && test ${recovery} = "0"; then
+    # normal boot
+    part start mmc ${emmc_idx} LNX root_part_start
+    part size mmc ${emmc_idx} LNX root_part_size
+
+    setenv bootargs "${bootargs_extra} skip_initramfs rw rootwait rootfstype=ext4 root=/dev/mmcblk0p${app_part_num_dec} init=/init nvdec_enabled=0 firmware_class.path=/vendor/firmware log_buf_len=4M loglevel=5 androidboot.bootloader=${ver_simple} androidboot.hardware=icosa_emmc androidboot.selinux=permissive androidboot.serialno=${serial#} androidboot.console=ttyGS0 console=tty1 pmc_reboot2payload.default_payload=reboot_payload.bin pmc_reboot2payload.reboot_action=via-payload pmc_reboot2payload.hekate_config_id=SWANDR pmc_reboot2payload.enabled=1 "
+ 
+    mmc read 0x98000000 $root_part_start $root_part_size
+
+    bootm 0x98000000 0x98000000 0x8d000000
+else
+    # recovery
+    part start mmc ${emmc_idx} SOS root_part_start
+    part size mmc ${emmc_idx} SOS root_part_size
+
+    setenv bootargs "${bootargs_extra} init=/init tegra_fbmem=0x0@0x1 nvdec_enabled=0 firmware_class.path=/etc/firmware log_buf_len=4M androidboot.bootloader=${ver_simple} androidboot.hardware=icosa_emmc androidboot.selinux=permissive androidboot.serialno=${serial#} androidboot.console=ttyGS0 console=ttyGS0 loglevel=5 pmc_reboot2payload.default_payload=reboot_payload.bin pmc_reboot2payload.reboot_action=via-payload pmc_reboot2payload.hekate_config_id=SWANDR pmc_reboot2payload.enabled=1 "
+        
+    mmc read 0x98000000 $root_part_start $root_part_size
+
+    bootm 0x98000000 0x98000000 0x8d000000
+fi

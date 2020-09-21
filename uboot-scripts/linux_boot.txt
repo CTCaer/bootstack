@@ -1,0 +1,48 @@
+setenv linux_dir ubuntu
+setenv rootdev mmcblk0p2
+setenv hekate_id SWR-UBU
+
+if load mmc 0:1 0x83000000 switchroot/${linux_dir}/Image; then setenv mmc_index 0;
+else load mmc 1:1 0x83000000 switchroot/${linux_dir}/Image; setenv mmc_index 1; fi
+load mmc ${mmc_index}:1 0x92000000 switchroot/${linux_dir}/initramfs
+load mmc ${mmc_index}:1 0x8d000000 switchroot/${linux_dir}/tegra210-icosa.dtb
+
+fdt addr 0x8d000000 ${filesize}
+setenv ovcfgaddr 0x8d100000
+setenv fdtovaddr 0x8d200000
+setenv evtmpaddr 0x8d300000
+
+# patch dtb with overlays if they exist
+if load mmc ${mmc_index}:1 ${fdtovaddr} switchroot/${linux_dir}/uenv.txt && env import -t ${fdtovaddr} ${filesize} && test -n ${overlays}; then
+	echo loaded overlays.txt: ${overlays}
+	for ov in ${overlays}; do
+	    echo overlaying ${ov}...
+		fdt resize 8192
+
+		if load mmc ${mmc_index}:1 ${ovcfgaddr} switchroot/${linux_dir}/overlays/${ov}.dtbo && fdt apply ${ovcfgaddr}; then
+			echo Successfully loaded ${ov}.dtbo...
+
+			# Add additional bootargs for UART-B
+			if test ${ov} = tegra210-icosa-UART-B-overlay; then setenv bootargs_extra ${bootargs_extra} ${uartb}; echo Enabled UART-B logging; fi
+		fi
+
+		# Add additional bootargs for Serial USB
+		if test ${ov} = usb_logging; then setenv bootargs_extra ${usblogging} ${bootargs_extra}; echo Enabled usb serial logging; fi
+
+		# Disable rootdev search done by initramfs
+		if test ${ov} = auto_rootdev_disable; then setenv bootargs_extra ${bootargs_extra} "auto_rootdev_disable"; fi
+
+		# Override and launch nfs bootargs here
+		if test ${ov} = nfs; then
+			if load mmc ${mmc_index}:1 ${evtmpaddr} switchroot/${linux_dir}/overlays/nfs.txt && env import -t ${evtmpaddr} ${filesize}; then
+				run nfsargs_run
+				echo Using NFS root
+			fi
+		fi
+	done
+fi
+
+run kernelcmd_run
+
+usb reset
+booti 0x83000000 0x92000000 0x8d000000

@@ -1,0 +1,6 @@
+setenv emmc_idx 0
+setenv sdmc_idx 1
+
+# load common android scr
+fatload mmc ${sdmc_idx}:1 0x91000000 switchroot/android/common.scr
+source 0x91000000

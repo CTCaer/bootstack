@@ -1,0 +1,11 @@
+serverip=192.168.5.1
+nfsrootdir=/exports/nfs_root
+
+# Static IP
+## In this case the sever acts also as gateway over direct Ethernet
+gatewayip=192.168.5.1
+ipaddr=192.168.5.2
+nfsargs_run=setenv bootargs_extra "root=/dev/nfs rootfstype=nfs ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}::eth0:off rw nfsroot=${serverip}:${nfsrootdir},tcp,nolock,nfsvers=3" ${bootargs_extra}
+
+# DHCP
+# nfsargs_run=setenv bootargs_extra "root=/dev/nfs rootfstype=nfs ip=dhcp rw nfsroot=${serverip}:${nfsrootdir},tcp,nolock,nfsvers=3" ${bootargs_extra}
