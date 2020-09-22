@@ -5,8 +5,8 @@ RUN apt update -y && apt install -y u-boot-tools cpio gzip device-tree-compiler
 WORKDIR /build
 VOLUME /out
 COPY . /build
-RUN cp /build/utils/cbfstool /usr/bin
-RUN chmod +x /build/utils/*.sh && chmod +x /usr/bin/cbfstool
+RUN cp /build/coreboot/cbfstool /usr/bin
+RUN chmod +x /usr/bin/cbfstool
 
 ARG DISTRO
 ENV DISTRO=${DISTRO}
@@ -27,5 +27,5 @@ dtc -I dts -O dtb -o /build/uboot-scripts/overlays/tegra210-icosa_emmc-overlay.d
 dtc -I dts -O dtb -o /build/uboot-scripts/overlays/tegra210-icosa-UART-B-overlay.dtbo /build/uboot-scripts/overlays/uart_b_debug.dts && \
 cp -r /build/uboot-scripts/uenv.txt /build/uboot-scripts/uenv_readme.txt /build/uboot-scripts/overlays /build/coreboot/coreboot.rom /out/switchroot/${DISTRO} && \
 cp /build/hekate_ini/L4T-${DISTRO}.ini /out/bootloader/ini/ && \
-/build/coreboot/update-coreboot.sh /out/switchroot/${DISTRO}/coreboot.rom /out/switchroot/${DISTRO}/u-boot.elf && \
+/build/coreboot/update-coreboot.sh /out/switchroot/${DISTRO}/coreboot.rom /out/u-boot.elf && \
 rm /out/switchroot/${DISTRO}/overlays/uart_b_debug.dts /out/switchroot/${DISTRO}/overlays/emmc_overlay.dts /out/switchroot/${DISTRO}/u-boot.elf
