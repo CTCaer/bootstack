@@ -28,4 +28,4 @@ dtc -I dts -O dtb -o /build/uboot-scripts/overlays/tegra210-icosa-UART-B-overlay
 cp -r /build/uboot-scripts/uenv.txt /build/uboot-scripts/uenv_readme.txt /build/uboot-scripts/overlays /build/coreboot/coreboot.rom /out/switchroot/${DISTRO} && \
 cp /build/hekate_ini/L4T-${DISTRO}.ini /out/bootloader/ini/ && \
 /build/coreboot/update-coreboot.sh /out/switchroot/${DISTRO}/coreboot.rom /out/u-boot.elf && \
-rm /out/switchroot/${DISTRO}/overlays/uart_b_debug.dts /out/switchroot/${DISTRO}/overlays/emmc_overlay.dts /out/switchroot/${DISTRO}/u-boot.elf
+rm /out/switchroot/${DISTRO}/overlays/uart_b_debug.dts /out/switchroot/${DISTRO}/overlays/emmc_overlay.dts /out/u-boot.elf
