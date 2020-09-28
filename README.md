@@ -37,8 +37,35 @@ mkimage -A arm -T script -O linux -d android_common_sdemmc.txt common.scr
 sudo apt-get install cpio
 ```
 
+To rebuild initramfs :
 ```sh
 sh -c 'cd initramfs_files/ && find . | cpio -H newc -o' | gzip -9 > new_initramfs.cpio.gz && mkimage -A arm64 -O linux -T ramdisk -C gzip -d new_initramfs.cpio.gz initramfs
+```
+
+To extract initramfs :
+
+```sh
+tail -c+65 < initramfs | gunzip > out
+```
+
+```sh
+mkdir initramfs_files
+```
+
+```sh
+mv out initramfs_files
+```
+
+```sh
+cd initramfs_files
+```
+
+```sh
+cpio -i < out
+```
+
+```sh
+rm out
 ```
 
 ### More infos
