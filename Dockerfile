@@ -1,5 +1,8 @@
 FROM ubuntu:18.04
 ARG DEBIAN_FRONTEND=noninteractive
+
+RUN chmod 1777 /tmp
+
 RUN apt update -y && apt install -y u-boot-tools cpio gzip device-tree-compiler
 
 WORKDIR /build
