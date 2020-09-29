@@ -39,6 +39,10 @@ Extra uenv parameters:
 hekate_id
 Override hekate_id set in boot.scr.
 
+hdmi_fbconsole
+0: Enables console logging on built-in screen
+1: Enables console logging on DP/HDMI/VGA
+
 uartb
 Overlay options for UART-B.
 
