@@ -1,5 +1,7 @@
 overlays=
 rootdev=mmcblk0p2
+rootlabel_retries=1
+skip_extract=0
 hekate_id=SWR-UBU
 usblogging=console=ttyGS0,115200,8n1
 uartb=no_console_suspend console=ttyS1,115200,8n1 earlycon=tegra_comb_uart,mmio32,0x70006040

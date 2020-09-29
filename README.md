@@ -1,12 +1,24 @@
-# Hekate - L4T Boot Files
+# L4T Bootstack
+
+This repository contains our L4T initramfs, u-boot and u-boot scripts, our latest coreboot.romm and a script to update it.
 
 ## Automated build
 
 Rebuilds initramfs and uboot script.
 For ubuntu bootfiles on partition 2 with Hekate ID SWR-UBU:
 
+Pull the docker image :
+```sh
+docker pull alizkan/l4t-bootfiles-misc:latest
+```
+
+Create a directory to store build files and kernel files.
 ```sh
 mkdir -p "${PWD}"/out
+```
+
+Run the docker contaainer to trigger the actuall build :
+```sh
 docker run -it --rm -e DISTRO=ubuntu -e PARTNUM=2 -e HKT_ID=SWR-UBU -v "${PWD}"/out:/out alizkan/l4t-bootfiles-misc:latest
 ```
 

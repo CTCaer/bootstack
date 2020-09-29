@@ -3,7 +3,9 @@ setenv rootdev mmcblk0p2
 setenv hekate_id SWR-UBU
 
 if load mmc 0:1 0x83000000 switchroot/${linux_dir}/Image; then setenv mmc_index 0;
-else load mmc 1:1 0x83000000 switchroot/${linux_dir}/Image; setenv mmc_index 1; fi
+elif load mmc 1:1 0x83000000 switchroot/${linux_dir}/Image; then setenv mmc_index 1;
+else reset; fi;
+
 load mmc ${mmc_index}:1 0x92000000 switchroot/${linux_dir}/initramfs
 load mmc ${mmc_index}:1 0x8d000000 switchroot/${linux_dir}/tegra210-icosa.dtb
 
