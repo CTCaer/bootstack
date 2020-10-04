@@ -1,4 +1,7 @@
-[submodule "u-boot"]
-	path = u-boot
-	url = https://gitlab.com/switchroot/bootstack/switch-uboot/
+[submodule "src/switch-coreboot"]
+	path = src/switch-coreboot
+	url = https://gitlab.com/switchroot/bootstack/switch-coreboot
+[submodule "src/switch-uboot"]
+	path = src/switch-uboot
+	url = https://gitlab.com/switchroot/bootstack/switch-uboot
 	branch = linux-norebase

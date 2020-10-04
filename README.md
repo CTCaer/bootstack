@@ -5,7 +5,7 @@ This repository contains our L4T initramfs, u-boot and u-boot scripts, our lates
 ## Automated build
 
 Rebuilds initramfs and uboot script.
-For ubuntu bootfiles on partition 2 with Hekate ID SWR-UBU:
+For Ubuntu Focal Bootfiles on partition 2 with Hekate ID SWR-FOC:
 
 Pull the docker image :
 ```sh
@@ -19,7 +19,7 @@ mkdir -p "${PWD}"/out
 
 Run the docker contaainer to trigger the actuall build :
 ```sh
-docker run -it --rm -e DISTRO=ubuntu -e PARTNUM=2 -e HKT_ID=SWR-UBU -v "${PWD}"/out:/out alizkan/l4t-bootfiles-misc:latest
+docker run -it --rm -e DISTRO=focal -e PARTNUM=mmcblk0p2 -e HEKATE_ID=SWR-FOC -v "${PWD}"/out:/out alizkan/l4t-bootfiles-misc:latest
 ```
 
 ## Manual build
@@ -80,10 +80,25 @@ cpio -i < out
 rm out
 ```
 
+### l4t-platform-t210-icosa-overlays
+
+Overlays for Tegra210
+
+- eMMC overlay
+```sh
+dtc -I dts -O dtb -o tegra210-icosa_emmc-overlay.dtbo emmc_overlay.dts
+```
+
+- UART-B overlay
+
+```sh
+dtc -I dts -O dtb -o tegra210-icosa-UART-B-overlay.dtbo uart_b_debug.dts
+```
+
 ### More infos
 
 Rebuild Dockerfile:
 
 ```sh
-docker image build -t alizkan/l4t-bootfiles-misc:latest .
+./scripts/docker/build_image.sh
 ```
