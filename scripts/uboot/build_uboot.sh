@@ -3,7 +3,7 @@ out="$(realpath "${@:$#}")"
 uboot_dir="$(dirname "$(dirname "$(dirname "${BASH_SOURCE[0]}")")")"/src/switch-uboot/
 
 [[ -z ${DISTRO} ]] && \
-	echo "Nothing set in DISTRO variable..Exiting." && exit 1
+	echo "Nothing set for DISTRO variable..Exiting." && exit 1
 
 [[ ! -d "${out}" ]] && \
 	echo "${out} is not a valid directory! Exiting.." && exit 1

@@ -6,7 +6,7 @@ initramfs_dir="$(dirname "$(dirname "$(dirname "${BASH_SOURCE[0]}")")")"/src/
 	echo "${out} is not a valid directory! Exiting.." && exit 1
 
 [[ -z ${DISTRO} ]] && \
-	echo "Nothing set in DISTRO variable.. Exiting." && exit 1
+	echo "Nothing set for DISTRO variable.. Exiting." && exit 1
 
 tar xf "${initramfs_dir}"/initramfs_files.tar.gz
 sh -c 'cd initramfs_files/ && find . | cpio -H newc -o' | gzip -9 > new_initramfs.cpio.gz

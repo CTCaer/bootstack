@@ -12,7 +12,7 @@ _script_dir="$(dirname "$(readlink -f $0)")"
 
 # Multiple variable check
 [[ -z ${DISTRO} || -z "${HEKATE_ID}" || -z ${PARTNUM} ]] && \
-	echo "Nothing set in DISTRO variable.. Exiting." && exit 1
+	echo "Variable not set correctly: DISTRO=${DISTRO} HEKATE_ID=${HEKATE_ID} PARTNUM=${PARTNUM} ! Exiting." && exit 1
 
 if [[ -n "${CPUS}" ]]; then
 	if [[ ! "${CPUS}" =~ ^[0-9]{,2}$ || "${CPUS}" > $(nproc)  ]]; then

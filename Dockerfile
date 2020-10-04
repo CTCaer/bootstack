@@ -17,7 +17,6 @@ RUN apt update -y && apt install -y \
 	python3-distutils \
 	python3-dev \
 	swig \
-	make \
 	python \
 	python-dev \
 	bc \
