@@ -27,6 +27,7 @@ RUN /bin/ash -c 'set -ex && \
     ARCH=`uname -m` && \
     if [ "$ARCH" != "aarch64" ]; then \
 	echo "x86_64" && \
+	apt update -y && \
 	apt install -y gcc-aarch64-linux-gnu; \
     fi'
 
