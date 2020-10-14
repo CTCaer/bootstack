@@ -27,6 +27,10 @@ rootlabel_retries
 How many times to retry and search rootdev.
 Each iteration is 200ms. Useful when booting via USB.
 
+runlevel
+- Int, default: 2
+Set distribution runlevel.
+
 skip_extract
 - Bool, default: 0 (false)
 Skip modules.tar.gz and update.tar.gz extraction.

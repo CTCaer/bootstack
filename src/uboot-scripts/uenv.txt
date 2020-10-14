@@ -1,5 +1,6 @@
 overlays=
 rootdev=mmcblk0p2
+runlevel=2
 rootlabel_retries=1
 skip_extract=0
 hekate_id=SWR-UBU
